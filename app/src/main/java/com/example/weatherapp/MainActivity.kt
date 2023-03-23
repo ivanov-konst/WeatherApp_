@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.TextView
+import retrofit2.Retrofit
 
 class MainActivity : AppCompatActivity() {
     @SuppressLint("MissingInflatedId")
@@ -13,5 +14,6 @@ class MainActivity : AppCompatActivity() {
 
         val textViewHello = findViewById<TextView>(R.id.tvHellow)
         textViewHello.text = "Hellow from code!"
+
     }
-}/
+}
