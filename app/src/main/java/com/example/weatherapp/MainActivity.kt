@@ -1,50 +1,41 @@
 package com.example.weatherapp
 
 import android.annotation.SuppressLint
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
+import android.view.View
+import android.widget.ProgressBar
 import android.widget.TextView
-import com.example.weatherapp.weather_screen.WeatherInteractor
-import com.example.weatherapp.weather_screen.data.WeatherApi
-import com.example.weatherapp.weather_screen.data.WeatherApiClient
-import com.example.weatherapp.weather_screen.data.WeatherRemoteSource
-import com.example.weatherapp.weather_screen.data.WeatherRepoImpl
-import com.example.weatherapp.weather_screen.ui.WeatherScreenPresenter
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import retrofit2.Retrofit
+import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
+import com.example.weatherapp.weather_screen.ui.UiEvent
+import com.example.weatherapp.weather_screen.ui.ViewState
+import com.example.weatherapp.weather_screen.ui.WeatherScreenViewModel
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import kotlinx.coroutines.*
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 class MainActivity : AppCompatActivity() {
 
-    private lateinit var presenter: WeatherScreenPresenter
+   private val viewModel: WeatherScreenViewModel by viewModel()
+   private val textViewHello: TextView by lazy { findViewById(R.id.tvHellow) }
+   private val fabWeather: FloatingActionButton by lazy { findViewById(R.id.fabWeatherFetch) }
+   private val progressBar: ProgressBar by lazy { findViewById(R.id.progressBar) }
 
+    @OptIn(DelicateCoroutinesApi::class)
     @SuppressLint("MissingInflatedId")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        presenter =  WeatherScreenPresenter(
-            WeatherInteractor(
-                WeatherRepoImpl(
-                    WeatherRemoteSource(WeatherApiClient.getApi())
-                )
-            )
-        )
+    viewModel.viewState.observe(this, ::render)
 
-        var weather = ""
         val textViewHello = findViewById<TextView>(R.id.tvHellow)
-
-        GlobalScope.launch {
-          withContext(Dispatchers.Main) {
-              textViewHello.text = presenter.getWeather()
-          }
+        fabWeather.setOnClickListener {
+            viewModel.processUiEvent(UiEvent.OnButtonClicked)
         }
-
-
-        textViewHello.text
-
+    }
+    private fun render(viewState: ViewState){
+        progressBar.isVisible = viewState.isLoading
+        textViewHello.text = "${viewState.title} ${viewState.temperature}"
     }
 }
